@@ -46,9 +46,9 @@ const Collectible: React.FC<{ position: [number, number, number]; setScore: Reac
         setCollected(true);
         collectibleRef.current.visible = false;
         addOrb([
-          Math.random() * 100 - 50, // Update to fit within terrainWidth
+          Math.random() * 200 - 50, // Update to fit within terrainWidth
           0.5,
-          Math.random() * 100 - 50, // Update to fit within terrainHeight
+          Math.random() * 200 - 50, // Update to fit within terrainHeight
         ]);
       }
     }
@@ -68,14 +68,17 @@ const Collectible: React.FC<{ position: [number, number, number]; setScore: Reac
 
 const generateRandomPositions = (count: number): [number, number, number][] => {
   
-  const terrainWidth = 100;
-  const terrainHeight = 100;
+  const terrainWidth = 200;
+  const terrainHeight = 200;
+  const terrainDepth = 10;
 
   const positions: [number, number, number][] = [];
   for (let i = 0; i < count; i++) {
     const x = Math.random() * terrainWidth - terrainWidth / 2; // Random positions within terrainWidth
     const z = Math.random() * terrainHeight - terrainHeight / 2; // Random positions within terrainHeight
-    positions.push([x, 0.5, z]);
+    // Random positions above terrainDepth 
+    const y = Math.random() * terrainDepth / 2 + 0.5;
+    positions.push([x, y, z]);
   }
   return positions;
 };

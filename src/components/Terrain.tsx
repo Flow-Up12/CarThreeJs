@@ -4,8 +4,8 @@ import { useLoader } from '@react-three/fiber';
 import { ImprovedNoise } from 'three/examples/jsm/Addons.js';
 
 const Terrain: React.FC = () => {
-  const terrainWidth = 100;
-  const terrainHeight = 100;
+  const terrainWidth = 200;
+  const terrainHeight = 200;
   const terrainDepth = 10;
   const segments = 128;
 
