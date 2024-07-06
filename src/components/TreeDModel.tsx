@@ -5,6 +5,7 @@ import { Environment } from '@react-three/drei';
 import Car from './Car';
 import FollowCamera from './FollowCamera';
 import Terrain from './Terrain';
+import { useGameContext } from '../context/GameContextProvider';
 
 interface ThreeDModelProps {
   setScore: React.Dispatch<React.SetStateAction<number>>;
@@ -70,6 +71,7 @@ const Collectible: React.FC<{ position: [number, number, number]; setScore: Reac
 };
 
 const generateRandomPositions = (count: number): [number, number, number][] => {
+  
   const terrainWidth = 100;
   const terrainHeight = 100;
 
@@ -83,8 +85,12 @@ const generateRandomPositions = (count: number): [number, number, number][] => {
 };
 
 const ThreeDModel: React.FC<ThreeDModelProps> = ({ setScore }) => {
+
+  const {isLoading} = useGameContext();
+
   const [collectibles, setCollectibles] = useState<[number, number, number][]>([]);
   const [position, setPosition] = useState<[number, number, number]>([0, 0.5, 0]);
+  // roate the car to face the direction it is moving
   const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
   const carRef = useRef<THREE.Group>(null);
   const terrainRef = useRef<THREE.Mesh>(null);
@@ -97,7 +103,7 @@ const ThreeDModel: React.FC<ThreeDModelProps> = ({ setScore }) => {
     setCollectibles((prev) => [...prev, position]);
   };
 
-  return (
+  return isLoading ? <></> :(
     <Canvas>
       <ambientLight intensity={0.5} />
       <directionalLight

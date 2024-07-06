@@ -2,7 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import BoostParticles from './BoostParticles';
-import FerrariModel from './FerrariMode';
+import CarModel from './CarModel';
+import { useGameContext } from '../context/GameContextProvider';
 
 interface CarProps {
   position: [number, number, number];
@@ -23,6 +24,8 @@ const Car: React.FC<CarProps> = ({ position, rotation, setPosition, setRotation,
   const [boosting, setBoosting] = useState(false);
   const [flying, setFlying] = useState(false);
   const raycaster = useRef(new THREE.Raycaster());
+
+  const {car} = useGameContext();
 
   useEffect(() => {
     let spacePressCount = 0;
@@ -110,7 +113,7 @@ const Car: React.FC<CarProps> = ({ position, rotation, setPosition, setRotation,
 
   return (
     <group ref={carRef} position={position as [number, number, number]} rotation={rotation as [number, number, number]}>
-      <FerrariModel/>
+      <CarModel modelPath={car}/>
       {boosting && <BoostParticles />}
     </group>
   );

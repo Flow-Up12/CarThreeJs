@@ -5,6 +5,9 @@
 
 .App {
   text-align: center;
+  height: 100%;
+  flex-grow: 1;
+  height: 100vh;
 }
 
 .App-header {
@@ -14,13 +17,11 @@
   position: fixed;
   width: 100%;
   top: 0;
-  z-index: 1000;
-  
+  z-index: 1000; 
 }
 
 .App-main {
-  margin-top: 70px; /* Adjust this based on header height */
-  height: calc(100vh - 70px);
+  height: calc(100vh - 75px);
   width: 100vw;
   display: flex;
   justify-content: center;
