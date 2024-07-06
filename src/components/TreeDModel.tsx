@@ -7,10 +7,6 @@ import FollowCamera from './FollowCamera';
 import Terrain from './Terrain';
 import { useGameContext } from '../context/GameContextProvider';
 
-interface ThreeDModelProps {
-  setScore: React.Dispatch<React.SetStateAction<number>>;
-}
-
 const ExplodingOrb: React.FC<{ position: [number, number, number] }> = ({ position }) => {
   const particles = useRef<THREE.Points>(null);
 
@@ -84,9 +80,9 @@ const generateRandomPositions = (count: number): [number, number, number][] => {
   return positions;
 };
 
-const ThreeDModel: React.FC<ThreeDModelProps> = ({ setScore }) => {
+const ThreeDModel = () => {
 
-  const {isLoading} = useGameContext();
+  const {isLoading, setScore} = useGameContext();
 
   const [collectibles, setCollectibles] = useState<[number, number, number][]>([]);
   const [position, setPosition] = useState<[number, number, number]>([0, 0.5, 0]);
