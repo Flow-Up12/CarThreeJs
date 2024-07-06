@@ -11,8 +11,8 @@ const App: React.FC = () => {
         <h1 className="text-4xl font-bold">Car Game</h1>
         <div className="scoreboard">
           <p>Score: {score}</p>
-          ADD a menue to select a car model create a menue where you click 
-          through the different car models and select the one you want to useya
+          {/* ADD a menue to select a car model create a menue where you click 
+          through the different car models and select the one you want to useya */}
         </div>
       </header>
       <main className="App-main">
