@@ -6,7 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/Addons.js';
 
 const BoostParticles = () => {
   const boostRef = useRef<THREE.Group>(null);
-  const gltf = useLoader(GLTFLoader, '/src/aura/scene.gltf'); // Update with the correct path to your GLB file
+  const gltf = useLoader(GLTFLoader, '/aura/scene.gltf'); // Update with the correct path to your GLB file
 
   gltf.scene.traverse((child) => {
     if ((child as THREE.Mesh).isMesh) {
