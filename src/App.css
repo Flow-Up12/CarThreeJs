@@ -1,0 +1,33 @@
+#root {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 1rem;
+  color: white;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  
+}
+
+.App-main {
+  margin-top: 70px; /* Adjust this based on header height */
+  height: calc(100vh - 70px);
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.scoreboard {
+  margin-top: 10px;
+  font-size: 1.5rem;
+}
