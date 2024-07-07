@@ -22,7 +22,6 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setPosition, se
   const gravity = 0.1;
   const jumpForce = 1.0;
   const boostDecay = 0.02;
-  const keysPressed = useRef<{ [key: string]: boolean }>({});
   const [boosting, setBoosting] = useState(false);
   const [jumping, setJumping] = useState(false);
   const [inAir, setInAir] = useState(false);
