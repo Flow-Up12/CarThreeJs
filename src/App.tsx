@@ -5,14 +5,13 @@ import GameContextProvider from './context/GameContextProvider';
 import ThreeDModel from './components/TreeDModel';
 
 const App: React.FC = () => {
-  
 
   return (
     <GameContextProvider>
       <div className="App">
         <Header />
         <main className="App-main">
-          <ThreeDModel  />
+          <ThreeDModel />
         </main>
       </div>
     </GameContextProvider>
@@ -20,4 +19,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-

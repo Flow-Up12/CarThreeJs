@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGameContext } from '../context/GameContextProvider';
 
 const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+
     const { inputType, setInputType } = useGameContext();
+    const [activeTab, setActiveTab] = useState<'settings' | 'controls'>('settings');
 
     if (!isOpen) {
         return null;
@@ -20,31 +22,66 @@ const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isO
                     >
                         Close
                     </button>
-
                 </div>
-                {/* black hr tag */}
                 <hr className="border-gray-700 border-1 mb-4 w-full" />
-                {/* grid */}
-                <div className="grid grid-cols-12 gap-4 py-12">
-                    <div className="col-span-6">
-                        <label htmlFor="inputType" className="block text-sm font-medium text-gray-700 mb-2 text-start">
-                            Input Type
-                        </label>
-                        <select
-                            id="inputType"
-                            value={inputType}
-                            onChange={(e) => setInputType(e.target.value as "keyboard" | "controller")}
-                            className="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                        >
-                            <option value="keyboard">Keyboard</option>
-                            <option value="controller">Controller</option>
-                        </select>
+                <div className="flex space-x-4 mb-4">
+                    <button
+                        onClick={() => setActiveTab('settings')}
+                        className={`px-4 py-2 rounded-md focus:outline-none ${activeTab === 'settings' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                        Settings
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('controls')}
+                        className={`px-4 py-2 rounded-md focus:outline-none ${activeTab === 'controls' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                        Controls
+                    </button>
+                </div>
+                {activeTab === 'settings' && (
+                    <div className="grid grid-cols-12 gap-4 py-12">
+                        <div className="col-span-6">
+                            <label htmlFor="inputType" className="block text-sm font-medium text-gray-700 mb-2 text-start">
+                                Input Type
+                            </label>
+                            <select
+                                id="inputType"
+                                value={inputType}
+                                onChange={(e) => setInputType(e.target.value as 'keyboard' | 'controller')}
+                                className="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                            >
+                                <option value="keyboard">Keyboard</option>
+                                <option value="controller">Controller</option>
+                            </select>
+                        </div>
+                        {/* Additional settings inputs can be added here */}
                     </div>
-                    {/* Additional settings inputs can be added here */}
-                </div>
-                <div className="mt-6 flex justify-end">
+                )}
+                {(inputType === 'controller' && activeTab === 'controls') &&
+                    <div className='text-black p-1'>
+                        <h2 className="text-2xl mb-4  text-left">Controller Controls</h2>
+                        <ul className="list-disc ml-5">
+                            <li>Left Stick: Move</li>
+                            <li>Right Stick: Rotate Camera</li>
+                            <li>X Button: Jump</li>
+                            <li>R1: Boost</li>
+                            <li>L1: Air Control</li>
+                        </ul>
+                    </div>}
 
-                </div>
+                {(inputType === 'keyboard' && activeTab === 'controls') &&
+                    <div className='text-black p-1'>
+                        <h2 className="text-2xl mb-4 text-left">Keyboard Controls</h2>
+                        <ul className="list-disc ml-5 text-left">
+                            <li>W: Move Forward</li>
+                            <li>S: Move Backward</li>
+                            <li>A: Turn Left</li>
+                            <li>D: Turn Right</li>
+                            <li>Space: Jump/Boost</li>
+                            <li>Double Space: Fly</li>
+                            <li>Y: Toggle Camera View</li>
+                        </ul>
+                    </div>}
             </div>
         </div>
     );
