@@ -9,6 +9,8 @@ interface GameContextProviderType {
   setScore: React.Dispatch<React.SetStateAction<number>>;
   inputType: "keyboard" | "controller";
   setInputType: React.Dispatch<React.SetStateAction<"keyboard" | "controller">>;
+  framesPerSecond: number;
+  setFramesPerSecond: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const GameContext = createContext<GameContextProviderType>({
@@ -17,7 +19,9 @@ export const GameContext = createContext<GameContextProviderType>({
   score: 0,
   setScore: () => {},
   inputType: "keyboard",
-  setInputType: () => {}
+  setInputType: () => {},
+  framesPerSecond: 0,
+  setFramesPerSecond: () => {},
 });
 
 export const useGameContext = () => useContext(GameContext);
@@ -26,7 +30,8 @@ const GameContextProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const [car, setCar] = useState<string>('/ferrari/scene.gltf');
   const [score, setScore] = useState<number>(0);
-  const [inputType, setInputType] = useState<"keyboard" | "controller">("keyboard");
+  const [inputType, setInputType] = useState<"keyboard" | "controller">("controller");
+  const [framesPerSecond, setFramesPerSecond] = useState<number>(0);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   useEffect(() => {
@@ -44,7 +49,9 @@ const GameContextProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       score,
       setScore,
       inputType,
-      setInputType
+      setInputType,
+      framesPerSecond,
+      setFramesPerSecond
     }}>
       {children}
     </GameContext.Provider>

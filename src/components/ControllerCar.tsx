@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import BoostParticles from './BoostParticles';
 import CarModel from './CarModel';
 import { useGameContext } from '../context/GameContextProvider';
+import { useSpring, animated } from '@react-spring/three';
 
 interface CarProps {
   position: [number, number, number];
@@ -14,21 +15,27 @@ interface CarProps {
   terrainRef: React.MutableRefObject<THREE.Mesh | null>;
 }
 
-const ControllerCar: React.FC<CarProps> = ({ position, rotation, setPosition, setRotation, carRef, terrainRef }) => {
-  const normalSpeed = 0.2;
-  const boostSpeed = 1;
+const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, carRef, terrainRef }) => {
+  const normalSpeed = 2;
+  const boostSpeed = 4;
   const rotationSpeed = 0.05;
-  const airRotationSpeed = 0.1;
-  const gravity = 0.1;
-  const jumpForce = 1.0;
+  const airRotationSpeed = 0.05;
+  const gravity = 1;
+  const jumpForce = 50;
   const boostDecay = 0.02;
   const [boosting, setBoosting] = useState(false);
   const [jumping, setJumping] = useState(false);
   const [inAir, setInAir] = useState(false);
+  const [canDoubleJump, setCanDoubleJump] = useState(false);
   const raycaster = useRef(new THREE.Raycaster());
-  const { car } = useGameContext();
+  const { car, setFramesPerSecond } = useGameContext();
 
   const [boostCounter, setBoostCounter] = useState(0);
+  const [{ x, y, z }, api] = useSpring(() => ({
+    x: position[0],
+    y: position[1],
+    z: position[2],
+  }));
 
   let animationFrameId: number;
 
@@ -40,32 +47,43 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setPosition, se
       if (gp) {
         const { axes, buttons } = gp;
         const [leftStickX, leftStickY] = axes;
-        const boostButtonPressed = buttons[7].pressed; // Right bumper (R1)
+        const accelerateButtonPressed = buttons[7].value; // Right trigger (R2)
+        const brakeButtonPressed = buttons[6].value; // Left trigger (L2)
+        const boostButtonPressed = buttons[5].pressed; // Right bumper (R1)
         const jumpButtonPressed = buttons[0].pressed; // X button
-        const airControlButtonPressed = buttons[6].pressed; // Left bumper (L1)
+        const leftBumperPressed = buttons[4].pressed; // Left bumper (L1)
 
         const speed = boosting ? boostSpeed : normalSpeed;
 
         if (!inAir) {
           // Ground controls
-          if (Math.abs(leftStickY) > 0.1) {
-            setPosition(([x, y, z]) => [
-              x + leftStickY * speed * Math.sin(rotation[1]),
-              y,
-              z + leftStickY * speed * Math.cos(rotation[1]),
-            ]);
+          if (accelerateButtonPressed > 0.1) {
+            api.start({
+              x: x.get() + accelerateButtonPressed * speed * Math.sin(rotation[1]),
+              z: z.get() + accelerateButtonPressed * speed * Math.cos(rotation[1]),
+            });
+          }
+          if (brakeButtonPressed > 0.1) {
+            api.start({
+              x: x.get() - brakeButtonPressed * speed * Math.sin(rotation[1]),
+              z: z.get() - brakeButtonPressed * speed * Math.cos(rotation[1]),
+            });
           }
           if (Math.abs(leftStickX) > 0.1) {
             setRotation(([x, y, z]) => [x, y - leftStickX * rotationSpeed, z]);
           }
-        } else if (airControlButtonPressed) {
+        } else {
           // Air controls
-          if (Math.abs(leftStickX) > 0.1 || Math.abs(leftStickY) > 0.1) {
-            setRotation(([x, y, z]) => [
-              x + leftStickY * airRotationSpeed,
-              y - leftStickX * airRotationSpeed,
-              z
-            ]);
+          if (Math.abs(leftStickX) > 0.1 && !leftBumperPressed) {
+            setRotation(([x, y, z]) => [x, y - leftStickX * airRotationSpeed, z]);
+          }
+          if (Math.abs(leftStickY) > 0.1 && !leftBumperPressed) {
+            setRotation(([x, y, z]) => [x + leftStickY * airRotationSpeed, y, z]);
+          }
+          if (leftBumperPressed) {
+            if (Math.abs(leftStickX) > 0.1 || Math.abs(leftStickY) > 0.1) {
+              setRotation(([x, y, z]) => [x + leftStickY * airRotationSpeed, y, z + leftStickX * airRotationSpeed]);
+            }
           }
         }
 
@@ -79,8 +97,12 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setPosition, se
         // Handle jumping
         if (jumpButtonPressed && !jumping) {
           setJumping(true);
-          setPosition(([x, y, z]) => [x, y + jumpForce, z]);
           setInAir(true);
+          setCanDoubleJump(true);
+          api.start({ y: y.get() + jumpForce });
+        } else if (jumpButtonPressed && canDoubleJump) {
+          setCanDoubleJump(false);
+          api.start({ y: y.get() + jumpForce });
         }
 
         if (!jumpButtonPressed && jumping) {
@@ -98,7 +120,7 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setPosition, se
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [rotation, setPosition, setRotation, boosting, jumping, inAir]);
+  }, [rotation, boosting, jumping, inAir, canDoubleJump, api, x, y, z]);
 
   const getTerrainHeight = (x: number, z: number): number => {
     if (!terrainRef.current) return 0;
@@ -116,37 +138,58 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setPosition, se
   };
 
   useFrame(() => {
-    setPosition(([x, y, z]) => {
-      const newY = y - gravity;
-      const terrainHeight = getTerrainHeight(x, z);
+    api.start(() => {
+      const newY = y.get() - gravity;
+      const terrainHeight = getTerrainHeight(x.get(), z.get());
       if (newY <= terrainHeight + 0.5) {
         setInAir(false);
-        return [x, Math.max(newY, terrainHeight + 0.5), z];
+        return { y: Math.max(newY, terrainHeight + 0.5) };
       } else {
         setInAir(true);
-        return [x, newY, z];
+        return { y: newY };
       }
     });
 
-    if (boosting && inAir) {
-      setPosition(([x, y, z]) => [x + Math.sin(rotation[1]) * boostSpeed, y, z + Math.cos(rotation[1]) * boostSpeed]);
-      setBoostCounter(boostCounter - boostDecay);
+    if (boosting) {
+      const forwardVector = new THREE.Vector3();
+      if (carRef.current) {
+        carRef.current.getWorldDirection(forwardVector);
+      }
+      api.start(() => ({
+        x: x.get() + forwardVector.x * boostSpeed,
+        y: y.get() + (inAir ? forwardVector.y * boostSpeed : 0),
+        z: z.get() + forwardVector.z * boostSpeed,
+      }));
+      setBoostCounter((prev) => prev - boostDecay);
       if (boostCounter <= 0) {
         setBoosting(false);
       }
     }
 
     if (carRef.current) {
-      carRef.current.position.set(position[0], position[1], position[2]);
+      carRef.current.position.set(x.get(), y.get(), z.get());
       carRef.current.rotation.set(rotation[0], rotation[1], rotation[2]);
     }
   });
 
+  let frameCount = 0;
+  let lastTime = performance.now();
+
+  useFrame(() => {
+    const currentTime = performance.now();
+    frameCount++;
+    if (currentTime > lastTime + 1000) {
+      setFramesPerSecond(Math.round((frameCount * 1000) / (currentTime - lastTime)));
+      frameCount = 0;
+      lastTime = currentTime;
+    }
+  });
+
   return (
-    <group ref={carRef} position={position as [number, number, number]} rotation={rotation as [number, number, number]}>
+    <animated.group ref={carRef} position={[x.get(), y.get(), z.get()]} rotation={rotation as [number, number, number]}>
       <CarModel modelPath={car} />
       {boosting && <BoostParticles />}
-    </group>
+    </animated.group>
   );
 };
 

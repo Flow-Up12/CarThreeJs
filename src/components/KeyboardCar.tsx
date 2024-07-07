@@ -37,11 +37,9 @@ const KeyboardCar: React.FC<CarProps> = ({ position, rotation, setPosition, setR
 
     const handleKeyDown = (event: KeyboardEvent) => {
       keysPressed.current[event.key] = true;
-      console.log(pressSpaceCounter);
 
       if (event.key === ' ') {
         pressSpaceCounter++;
-        console.log(pressSpaceCounter);
         setBoosting(true);
         if (pressSpaceCounter === 2) {
           setFlying((prevFlying) => !prevFlying);

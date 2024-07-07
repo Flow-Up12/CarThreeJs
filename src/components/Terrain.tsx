@@ -19,7 +19,7 @@ const Terrain: React.FC = () => {
     for (let i = 0; i < vertices.length; i += 3) {
       const x = vertices[i] / terrainWidth;
       const y = vertices[i + 1] / terrainHeight;
-      vertices[i + 2] = noise.noise(x * 5, y * 5, 0) * terrainDepth;
+      // vertices[i + 2] = noise.noise(x * 5, y * 5, 0) * terrainDepth;
     }
 
     geo.attributes.position.needsUpdate = true;

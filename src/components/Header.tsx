@@ -8,7 +8,7 @@ const Header: React.FC = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   
-  const {score} = useGameContext();
+  const {score, framesPerSecond} = useGameContext();
 
   return (
     <header className="bg-black text-white py-4">
@@ -31,6 +31,7 @@ const Header: React.FC = () => {
         >
         Settings
         </button>
+          {framesPerSecond}
         </div>
       </div>
       
