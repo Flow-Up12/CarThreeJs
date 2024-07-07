@@ -2,10 +2,11 @@ import React, { useRef, useState, useEffect, MutableRefObject } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Environment } from '@react-three/drei';
-import Car from './Car';
 import FollowCamera from './FollowCamera';
 import Terrain from './Terrain';
 import { useGameContext } from '../context/GameContextProvider';
+import ControllerCar from './ControllerCar';
+import KeyboardCar from './KeyboardCar';
 
 const ExplodingOrb: React.FC<{ position: [number, number, number] }> = ({ position }) => {
   const particles = useRef<THREE.Points>(null);
@@ -85,7 +86,7 @@ const generateRandomPositions = (count: number): [number, number, number][] => {
 
 const ThreeDModel = () => {
 
-  const {isLoading, setScore} = useGameContext();
+  const {isLoading, setScore, inputType} = useGameContext();
 
   const [collectibles, setCollectibles] = useState<[number, number, number][]>([]);
   const [position, setPosition] = useState<[number, number, number]>([0, 0.5, 0]);
@@ -119,14 +120,8 @@ const ThreeDModel = () => {
       />
       <pointLight position={[-10, 10, -10]} intensity={0.5} />
       <pointLight position={[10, 10, 10]} intensity={0.5} />
-      <Car
-        position={position}
-        rotation={rotation}
-        setPosition={setPosition}
-        setRotation={setRotation}
-        carRef={carRef}
-        terrainRef={terrainRef}
-      />
+      {inputType === 'controller' && <ControllerCar position={position} rotation={rotation} setPosition={setPosition} setRotation={setRotation} carRef={carRef} terrainRef={terrainRef} />} 
+      {inputType === 'keyboard' && <KeyboardCar position={position} rotation={rotation} setPosition={setPosition} setRotation={setRotation} carRef={carRef} terrainRef={terrainRef} />}
       <FollowCamera carRef={carRef} />
       <mesh ref={terrainRef}>
         <Terrain />

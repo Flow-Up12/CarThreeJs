@@ -14,8 +14,14 @@ const CarModel: React.FC<CarModelProps> = ({ modelPath }) => {
     const size = new THREE.Vector3();
     box.getSize(size);
 
+    console.log(size);
+
     const maxDimension = Math.max(size.x, size.y, size.z);
     const scale = 5 / maxDimension;
+
+    console.log(scale); 
+
+    console.log(maxDimension)
 
     return scale;
   }

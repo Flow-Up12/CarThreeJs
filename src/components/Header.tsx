@@ -1,27 +1,41 @@
 import React, { useState } from 'react';
 import CarSelectModal from './CarSelectModal';
 import { useGameContext } from '../context/GameContextProvider';
+import SettingsModal from './SettingsModal';
 
 const Header: React.FC = () => {
 
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isSettingsOpen, setSettingsOpen] = useState(false);
+  
   const {score} = useGameContext();
 
   return (
     <header className="bg-black text-white py-4">
-      <div className="container mx-auto flex justify-between items-center">
+      <div className="container flex justify-between mx-auto">
         <h1 className="text-4xl font-bold">Car Game</h1>
         <div>
           <span className="text-4xl font-bold">Score: {score}</span>
         </div>
+        <div>
         <button
-          className="bg-white text-blue-600 px-4 py-2 rounded-lg"
+          className="bg-white text-blue-600 px-4 py-2 rounded-lg mr-5"
           onClick={() => setModalOpen(true)}
         >
           Select Car
         </button>
+        {/* settings button add icon */}
+        <button
+          className="bg-white text-blue-600 py-2 rounded-lg"
+          onClick={() => setSettingsOpen(true)}
+        >
+        Settings
+        </button>
+        </div>
       </div>
+      
       {isModalOpen && <CarSelectModal closeModal={() => setModalOpen(false)} />}
+      {isSettingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} isOpen={isSettingsOpen} />}
     </header>
   );
 };

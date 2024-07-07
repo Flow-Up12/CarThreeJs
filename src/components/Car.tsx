@@ -16,7 +16,7 @@ interface CarProps {
 
 const Car: React.FC<CarProps> = ({ position, rotation, setPosition, setRotation, carRef, terrainRef }) => {
   const normalSpeed = 0.2;
-  const boostSpeed = 0.5;
+  const boostSpeed = 1;
   const rotationSpeed = 0.05;
   const gravity = .10;
   const flySpeed = 0.3;
@@ -25,25 +25,30 @@ const Car: React.FC<CarProps> = ({ position, rotation, setPosition, setRotation,
   const [flying, setFlying] = useState(false);
   const raycaster = useRef(new THREE.Raycaster());
 
-  const {car} = useGameContext();
+  const { car } = useGameContext();
+
+  // Boost Logic
+  const [pressBoostCounter, setPressBoostCounter] = useState(0);
+
+  let pressBoostTimer: number;
+  let animationFrameId: number;
+
 
   useEffect(() => {
-    let spacePressCount = 0;
-    let spacePressTimer: number;
-    
+
     const handleKeyDown = (event: KeyboardEvent) => {
       keysPressed.current[event.key] = true;
       if (event.key === ' ') {
-        spacePressCount += 1;
+        setPressBoostCounter((prev) => prev + 1);
         setBoosting(true);
 
-        if (spacePressCount === 2) {
+        if (pressBoostCounter === 2) {
           setFlying((prevFlying) => !prevFlying);
-          spacePressCount = 0; // Reset after toggling flying mode
-          clearTimeout(spacePressTimer); // Clear the timer since double space press was detected
+          setPressBoostCounter(1); // Reset after toggling flying mode
+          clearTimeout(pressBoostTimer); // Clear the timer since double space press was detected
         } else {
-          spacePressTimer = setTimeout(() => {
-            spacePressCount = 0; // Reset count if no double press within 500ms
+          pressBoostTimer = setTimeout(() => {
+            setPressBoostCounter(1); // Reset count if no double press within
           }, 500);
         }
       }
@@ -62,9 +67,92 @@ const Car: React.FC<CarProps> = ({ position, rotation, setPosition, setRotation,
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-      clearTimeout(spacePressTimer);
+      clearTimeout(pressBoostTimer);
     };
   }, []);
+
+
+  useEffect(() => {
+
+    const handleGamepadInput = () => {
+      const gamepads = navigator.getGamepads();
+      const gp = gamepads[0];
+
+      if (gp) {
+        const { axes, buttons } = gp;
+        const [leftStickX, leftStickY, rightStickX] = axes;
+        const boostButtonPressed = buttons[0].pressed;
+        
+        const speed = boosting ? boostSpeed : normalSpeed;
+
+
+        // Map left stick to movement
+        if (Math.abs(leftStickY) > 0.1) {
+          setPosition(([x, y, z]) => [
+            x + leftStickY * speed * Math.sin(rotation[1]),
+            y,
+            z + leftStickY * speed * Math.cos(rotation[1]),
+          ]);
+        }
+        if (Math.abs(leftStickX) > 0.1) {
+          setRotation(([x, y, z]) => [x, y - leftStickX * rotationSpeed, z]);
+        }
+
+        const handleBoost = (pressed: boolean) => {
+
+          if (pressed) {
+            if (!boosting) {
+
+              setBoosting(true);
+              console.log('boosting')
+              setPressBoostCounter((prev) => prev + 1);
+              console.log(pressBoostCounter)
+
+              if (pressBoostCounter === 2) {
+                console.log('double press')
+                setFlying((prevFlying) => !prevFlying);
+                setPressBoostCounter(1); // Reset after toggling flying mode
+                clearTimeout(pressBoostTimer); // Clear the timer since double press was detected
+              } else {
+                pressBoostTimer = setTimeout(() => {
+                  setPressBoostCounter(1); // Reset count if no double press within
+                }, 1);
+              }
+            }
+          } else {
+            if (boosting) {
+              setBoosting(false);
+            }
+
+            if (flying) {
+              console.log('flying')
+              setPosition(([x, y, z]) => [x, y + flySpeed, z]);
+            } else {
+              setPosition(([x, y, z]) => [x, y - gravity, z]);
+            }
+            
+          }
+
+        };
+        // Handle boost logic
+        handleBoost(boostButtonPressed);
+      }
+
+
+
+      animationFrameId = requestAnimationFrame(handleGamepadInput);
+    };
+
+    // Start the gamepad input handling
+    animationFrameId = requestAnimationFrame(handleGamepadInput);
+
+    // Cleanup function to cancel animation frame and clear timeout
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      clearTimeout(pressBoostTimer);
+    };
+  }, [rotation, setPosition, setRotation, boosting, flying, normalSpeed, rotationSpeed, flySpeed, gravity]);
+
 
   const getTerrainHeight = (x: number, z: number): number => {
     if (!terrainRef.current) return 0;
@@ -113,7 +201,7 @@ const Car: React.FC<CarProps> = ({ position, rotation, setPosition, setRotation,
 
   return (
     <group ref={carRef} position={position as [number, number, number]} rotation={rotation as [number, number, number]}>
-      <CarModel modelPath={car}/>
+      <CarModel modelPath={car} />
       {boosting && <BoostParticles />}
     </group>
   );

@@ -41,3 +41,4 @@ const FollowCamera: React.FC<FollowCameraProps> = ({ carRef }) => {
 };
 
 export default FollowCamera;
+
