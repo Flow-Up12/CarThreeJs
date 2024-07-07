@@ -16,7 +16,7 @@ interface CarProps {
 
 const KeyboardCar: React.FC<CarProps> = ({ position, rotation, setPosition, setRotation, carRef, terrainRef }) => {
   const normalSpeed = 0.2;
-  const boostSpeed = 1;
+  const boostSpeed = .5;
   const rotationSpeed = 0.05;
   const gravity = .10;
   const flySpeed = 0.3;

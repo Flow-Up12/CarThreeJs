@@ -68,7 +68,7 @@ const ModalCarModel: React.FC<CarModelProps> = ({ modelPath }) => {
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
-            scale={[0.1, 0.1, 0.1]}
+            scale={[.5, 0.5, 0.5]}
         >   
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 5]} intensity={1} />

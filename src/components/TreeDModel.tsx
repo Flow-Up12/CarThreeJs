@@ -67,10 +67,34 @@ const Collectible: React.FC<{ position: [number, number, number]; setScore: Reac
   );
 };
 
+const RingObstacle: React.FC<{ position: [number, number, number]; setScore: React.Dispatch<React.SetStateAction<number>>; carRef: MutableRefObject<THREE.Group | null>; }> = ({ position, setScore, carRef }) => {
+  const ringRef = useRef<THREE.Mesh>(null);
+  const [passedThrough, setPassedThrough] = useState(false);
+
+  useFrame(() => {
+    if (ringRef.current && carRef.current) {
+      const carPosition = new THREE.Vector3();
+      carRef.current.getWorldPosition(carPosition);
+      const distance = ringRef.current.position.distanceTo(carPosition);
+      if (distance < 5 && !passedThrough) {
+        setScore((prevScore) => prevScore + 5); // Increase score by 5 for going through a ring
+        setPassedThrough(true);
+        ringRef.current.visible = false;
+      }
+    }
+  });
+
+  return (
+    <mesh ref={ringRef} position={position}>
+      <torusGeometry args={[10, 1, 16, 100]} />
+      <meshStandardMaterial color="blue" />
+    </mesh>
+  );
+};
+
 const generateRandomPositions = (count: number): [number, number, number][] => {
-  
-  const terrainWidth = 200;
-  const terrainHeight = 200;
+  const terrainWidth = 400;
+  const terrainHeight = 400;
   const terrainDepth = 10;
 
   const positions: [number, number, number][] = [];
@@ -85,25 +109,26 @@ const generateRandomPositions = (count: number): [number, number, number][] => {
 };
 
 const ThreeDModel = () => {
-
-  const {isLoading, setScore, inputType} = useGameContext();
+  const { isLoading, setScore, inputType } = useGameContext();
 
   const [collectibles, setCollectibles] = useState<[number, number, number][]>([]);
+  const [ringPositions, setRingPositions] = useState<[number, number, number][]>([]);
   const [position, setPosition] = useState<[number, number, number]>([0, 0.5, 0]);
-  // roate the car to face the direction it is moving
   const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
   const carRef = useRef<THREE.Group>(null);
   const terrainRef = useRef<THREE.Mesh>(null);
 
   useEffect(() => {
     setCollectibles(generateRandomPositions(100));
+    setRingPositions(generateRandomPositions(20));
   }, []);
 
   const addOrb = (position: [number, number, number]) => {
     setCollectibles((prev) => [...prev, position]);
   };
 
-  return isLoading ? <></> :(
+
+  return isLoading ? <></> : (
     <Canvas>
       <ambientLight intensity={0.5} />
       <directionalLight
@@ -120,7 +145,7 @@ const ThreeDModel = () => {
       />
       <pointLight position={[-10, 10, -10]} intensity={0.5} />
       <pointLight position={[10, 10, 10]} intensity={0.5} />
-      {inputType === 'controller' && <ControllerCar position={position} rotation={rotation} setPosition={setPosition} setRotation={setRotation} carRef={carRef} terrainRef={terrainRef} />} 
+      {inputType === 'controller' && <ControllerCar position={position} rotation={rotation} setPosition={setPosition} setRotation={setRotation} carRef={carRef} terrainRef={terrainRef} />}
       {inputType === 'keyboard' && <KeyboardCar position={position} rotation={rotation} setPosition={setPosition} setRotation={setRotation} carRef={carRef} terrainRef={terrainRef} />}
       <FollowCamera carRef={carRef} />
       <mesh ref={terrainRef}>
@@ -128,6 +153,9 @@ const ThreeDModel = () => {
       </mesh>
       {collectibles.map((pos, index) => (
         <Collectible key={index} position={pos} setScore={setScore} carRef={carRef} addOrb={addOrb} />
+      ))}
+      {ringPositions.map((pos, index) => (
+        <RingObstacle key={index} position={pos} setScore={setScore} carRef={carRef} />
       ))}
       <Environment background files="/sky.hdr" />
     </Canvas>

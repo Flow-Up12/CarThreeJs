@@ -4,9 +4,9 @@ import { useLoader } from '@react-three/fiber';
 import { ImprovedNoise } from 'three/examples/jsm/Addons.js';
 
 const Terrain: React.FC = () => {
-  const terrainWidth = 200;
-  const terrainHeight = 200;
-  const terrainDepth = 10;
+  const terrainWidth = 400;
+  const terrainHeight = 400;
+  const terrainDepth = 20;
   const segments = 128;
 
   const texture = useLoader(THREE.TextureLoader, '/grass.jpg'); // Replace with your texture path
