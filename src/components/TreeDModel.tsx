@@ -110,7 +110,7 @@ const generateRandomPositions = (count: number): [number, number, number][] => {
 
 const ThreeDModel = () => {
   
-  const { isLoading, setScore, inputType, setFramesPerSecond } = useGameContext();
+  const { isLoading, setScore, inputType } = useGameContext();
 
   const [collectibles, setCollectibles] = useState<[number, number, number][]>([]);
   const [ringPositions, setRingPositions] = useState<[number, number, number][]>([]);

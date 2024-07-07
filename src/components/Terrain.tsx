@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
-import { ImprovedNoise } from 'three/examples/jsm/Addons.js';
+// import { ImprovedNoise } from 'three/examples/jsm/Addons.js';
 
 const Terrain: React.FC = () => {
   const terrainWidth = 400;
@@ -14,11 +14,11 @@ const Terrain: React.FC = () => {
   const geometry = useMemo(() => {
     const geo = new THREE.PlaneGeometry(terrainWidth, terrainHeight, segments, segments);
     const vertices = geo.attributes.position.array as Float32Array;
-    const noise = new ImprovedNoise();
+    // const noise = new ImprovedNoise();
 
     for (let i = 0; i < vertices.length; i += 3) {
-      const x = vertices[i] / terrainWidth;
-      const y = vertices[i + 1] / terrainHeight;
+      // const x = vertices[i] / terrainWidth;
+      // const y = vertices[i + 1] / terrainHeight;
       // vertices[i + 2] = noise.noise(x * 5, y * 5, 0) * terrainDepth;
     }
 
