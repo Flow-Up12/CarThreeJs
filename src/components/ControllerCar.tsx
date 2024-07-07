@@ -74,17 +74,24 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
           }
         } else {
           // Air controls
+          const quaternion = new THREE.Quaternion();
+          const euler = new THREE.Euler(rotation[0], rotation[1], rotation[2], 'YXZ');
+
           if (Math.abs(leftStickX) > 0.1 && !leftBumperPressed) {
-            setRotation(([x, y, z]) => [x, y - leftStickX * airRotationSpeed, z]);
+            euler.y -= leftStickX * airRotationSpeed;
           }
           if (Math.abs(leftStickY) > 0.1 && !leftBumperPressed) {
-            setRotation(([x, y, z]) => [x + leftStickY * airRotationSpeed, y, z]);
+            euler.x += leftStickY * airRotationSpeed;
           }
           if (leftBumperPressed) {
             if (Math.abs(leftStickX) > 0.1 || Math.abs(leftStickY) > 0.1) {
-              setRotation(([x, y, z]) => [x + leftStickY * airRotationSpeed, y, z + leftStickX * airRotationSpeed]);
+              euler.z += leftStickX * airRotationSpeed;
+              euler.x += leftStickY * airRotationSpeed;
             }
           }
+          
+          quaternion.setFromEuler(euler);
+          setRotation([euler.x, euler.y, euler.z]);
         }
 
         // Handle boosting
