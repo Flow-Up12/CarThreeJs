@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 
 export const Ball: React.FC<{ position: [number, number, number], carRef: React.MutableRefObject<THREE.Group | null> }> = ({ position, carRef }) => {

@@ -40,7 +40,6 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
   }));
 
   // Add velocity state
-  const velocity = useRef(new THREE.Vector3(0, 0, 0));
   const flipVelocity = useRef(new THREE.Vector3(0, 0, 0));
 
   let animationFrameId: number;
