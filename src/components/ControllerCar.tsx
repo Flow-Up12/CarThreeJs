@@ -21,12 +21,14 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
   const rotationSpeed = 0.05;
   const airRotationSpeed = 0.05;
   const gravity = 1;
-  const jumpForce = 50;
+  const jumpForce = 60;
+  const flipForce = 20; // Reduced force applied during flip for more control
   const boostDecay = 0.02;
   const [boosting, setBoosting] = useState(false);
   const [jumping, setJumping] = useState(false);
   const [inAir, setInAir] = useState(false);
   const [canDoubleJump, setCanDoubleJump] = useState(false);
+  const [flipping, setFlipping] = useState(false); // State to handle flip
   const raycaster = useRef(new THREE.Raycaster());
   const { car, setFramesPerSecond } = useGameContext();
 
@@ -36,6 +38,10 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
     y: position[1],
     z: position[2],
   }));
+
+  // Add velocity state
+  const velocity = useRef(new THREE.Vector3(0, 0, 0));
+  const flipVelocity = useRef(new THREE.Vector3(0, 0, 0));
 
   let animationFrameId: number;
 
@@ -89,7 +95,7 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
               euler.x += leftStickY * airRotationSpeed;
             }
           }
-          
+
           quaternion.setFromEuler(euler);
           setRotation([euler.x, euler.y, euler.z]);
         }
@@ -101,15 +107,30 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
           setBoosting(false);
         }
 
-        // Handle jumping
+        // Handle jumping and flipping
         if (jumpButtonPressed && !jumping) {
-          setJumping(true);
-          setInAir(true);
-          setCanDoubleJump(true);
-          api.start({ y: y.get() + jumpForce });
-        } else if (jumpButtonPressed && canDoubleJump) {
-          setCanDoubleJump(false);
-          api.start({ y: y.get() + jumpForce });
+          if (!inAir) {
+            setJumping(true);
+            setInAir(true);
+            setCanDoubleJump(true);
+            api.start({ y: y.get() + jumpForce });
+          } else if (canDoubleJump && !flipping) {
+            setCanDoubleJump(false);
+            setFlipping(true);
+            if (Math.abs(leftStickX) > 0.1 || Math.abs(leftStickY) > 0.1) {
+              // Apply flip rotation based on left stick direction
+              const flipDirection = new THREE.Vector3(leftStickX, 0, leftStickY).normalize().multiplyScalar(flipForce);
+              flipVelocity.current.copy(flipDirection); // Apply flip direction to velocity
+              setRotation(([x, y, z]) => [x + leftStickY * Math.PI / 10, y + leftStickX * Math.PI / 2, z]); // Slow down the rotation
+            } else {
+              // Regular jump without flip
+              api.start({ y: y.get() + jumpForce });
+            }
+            setTimeout(() => {
+              setFlipping(false);
+              // setRotation([0, rotation[1], 0]); // Reset to flat rotation
+            }, 500); // Extend the flipping duration
+          }
         }
 
         if (!jumpButtonPressed && jumping) {
@@ -127,7 +148,7 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [rotation, boosting, jumping, inAir, canDoubleJump, api, x, y, z]);
+  }, [rotation, boosting, jumping, inAir, canDoubleJump, flipping, api, x, y, z]);
 
   const getTerrainHeight = (x: number, z: number): number => {
     if (!terrainRef.current) return 0;
@@ -157,6 +178,17 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
       }
     });
 
+    // Apply flip velocity
+    if (flipping) {
+      api.start({
+        x: x.get() + flipVelocity.current.x,
+        y: y.get() + flipVelocity.current.y,
+        z: z.get() + flipVelocity.current.z,
+      });
+      // Apply damping to gradually reduce flip velocity
+      flipVelocity.current.multiplyScalar(0.9);
+    }
+
     if (boosting) {
       const forwardVector = new THREE.Vector3();
       if (carRef.current) {
@@ -181,7 +213,7 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
 
   let frameCount = 0;
   let lastTime = performance.now();
-
+  
   useFrame(() => {
     const currentTime = performance.now();
     frameCount++;

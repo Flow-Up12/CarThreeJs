@@ -7,6 +7,7 @@ import Terrain from './Terrain';
 import { useGameContext } from '../context/GameContextProvider';
 import ControllerCar from './ControllerCar';
 import KeyboardCar from './KeyboardCar';
+import { Ball } from './Ball';
 
 const ExplodingOrb: React.FC<{ position: [number, number, number] }> = ({ position }) => {
   const particles = useRef<THREE.Points>(null);
@@ -116,6 +117,7 @@ const ThreeDModel = () => {
   const [ringPositions, setRingPositions] = useState<[number, number, number][]>([]);
   const [position, setPosition] = useState<[number, number, number]>([0, 0.5, 0]);
   const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
+  const ballInitialPosition: [number, number, number] = [0, 1, 5];
   const carRef = useRef<THREE.Group>(null);
   const terrainRef = useRef<THREE.Mesh>(null);
 
@@ -159,6 +161,7 @@ const ThreeDModel = () => {
       {ringPositions.map((pos, index) => (
         <RingObstacle key={index} position={pos} setScore={setScore} carRef={carRef} />
       ))}
+      <Ball position={ballInitialPosition} carRef={carRef} />
       <Environment background files="/sky.hdr" />
     </Canvas>
   );
