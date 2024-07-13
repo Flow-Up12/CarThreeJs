@@ -1,20 +1,12 @@
+// src/App.js
 import React from 'react';
-import './App.css';
-import Header from './components/Header';
-import GameContextProvider from './context/GameContextProvider';
-import ThreeDModel from './components/TreeDModel';
+import BabylonScene from './components/BabylonScene';
 
-const App: React.FC = () => {
-
+const App = () => {
   return (
-    <GameContextProvider>
-      <div className="App">
-        <Header />
-        <main className="App-main">
-          <ThreeDModel />
-        </main>
-      </div>
-    </GameContextProvider>
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <BabylonScene />
+    </div>
   );
 };
 

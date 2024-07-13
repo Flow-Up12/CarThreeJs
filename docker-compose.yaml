@@ -1,0 +1,8 @@
+version: '3'
+services:
+  gdevelop:
+    build:
+      dockerfile: ../../Dockerfile.gvdevelop
+      context: ./GDevelop/newIDE/app
+    ports:
+      - "3001:3000"

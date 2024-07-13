@@ -10,8 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@babylonjs/core": "^7.14.0",
+    "@babylonjs/loaders": "^7.14.0",
+    "@babylonjs/materials": "^7.14.0",
     "@react-three/drei": "^9.108.1",
     "@react-three/fiber": "^8.16.8",
+    "@types/cannon": "^0.1.12",
+    "cannon": "^0.6.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "three": "^0.166.0"
