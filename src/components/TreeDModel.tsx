@@ -8,6 +8,9 @@ import { useGameContext } from '../context/GameContextProvider';
 import ControllerCar from './ControllerCar';
 import KeyboardCar from './KeyboardCar';
 import { Ball } from './Ball';
+import { io } from 'socket.io-client';
+import CarModel from './CarModel';
+import { useCarModel } from '../context/useCarModel';
 
 const ExplodingOrb: React.FC<{ position: [number, number, number] }> = ({ position }) => {
   const particles = useRef<THREE.Points>(null);
@@ -102,35 +105,81 @@ const generateRandomPositions = (count: number): [number, number, number][] => {
   for (let i = 0; i < count; i++) {
     const x = Math.random() * terrainWidth - terrainWidth / 2; // Random positions within terrainWidth
     const z = Math.random() * terrainHeight - terrainHeight / 2; // Random positions within terrainHeight
-    // Random positions above terrainDepth 
-    const y = Math.random() * terrainDepth / 2 + 0.5;
+    const y = Math.random() * terrainDepth / 2 + 0.5; // Random positions above terrainDepth
     positions.push([x, y, z]);
   }
   return positions;
 };
 
-const ThreeDModel = () => {
-  
-  const { isLoading, setScore, inputType } = useGameContext();
+const socket = io('http://localhost:4000');
 
+const MultiplayerCar: React.FC<{ carState: { position: [number, number, number]; rotation: [number, number, number] }; carRef: MutableRefObject<THREE.Group | null> }> = ({ carState, carRef }) => {
+
+  return (
+    <group ref={carRef} position={carState.position} rotation={carState.rotation}>
+      <CarModel modelPath='/ferrari/scene.gltf'/>
+    </group>
+  );
+};
+
+const ThreeDModel: React.FC = () => {
+  const { isLoading, setScore, inputType } = useGameContext();
   const [collectibles, setCollectibles] = useState<[number, number, number][]>([]);
   const [ringPositions, setRingPositions] = useState<[number, number, number][]>([]);
   const [position, setPosition] = useState<[number, number, number]>([0, 0.5, 0]);
   const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
-  const ballInitialPosition: [number, number, number] = [0, 1, 5];
   const carRef = useRef<THREE.Group>(null);
+  const multiplayerCarRef = useRef<THREE.Group>(null);
   const terrainRef = useRef<THREE.Mesh>(null);
+  const [cars, setCars] = useState<{ [id: string]: { position: [number, number, number]; rotation: [number, number, number] } }>({});
+
 
   useEffect(() => {
     setCollectibles(generateRandomPositions(100));
     setRingPositions(generateRandomPositions(20));
   }, []);
 
+  useEffect(() => {
+    socket.on('initialize', (initialCars) => {
+      setCars(initialCars);
+    });
+
+    socket.on('newCar', ({ id, state }) => {
+      setCars((prevCars) => ({ ...prevCars, [id]: state }));
+    });
+
+    socket.on('updateCar', ({ id, state }) => {
+      setCars((prevCars) => ({ ...prevCars, [id]: state }));
+    });
+
+    socket.on('removeCar', (id) => {
+      setCars((prevCars) => {
+        const newCars = { ...prevCars };
+        delete newCars[id];
+        return newCars;
+      });
+    });
+
+    return () => {
+      socket.off('initialize');
+      socket.off('newCar');
+      socket.off('updateCar');
+      socket.off('removeCar');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (carRef.current) {
+      socket.emit('updateCar', {
+        position,
+        rotation,
+      });
+    }
+  }, [position, rotation]);
+
   const addOrb = (position: [number, number, number]) => {
     setCollectibles((prev) => [...prev, position]);
   };
-
-
 
   return isLoading ? <></> : (
     <Canvas>
@@ -155,16 +204,18 @@ const ThreeDModel = () => {
       <mesh ref={terrainRef}>
         <Terrain />
       </mesh>
+      {Object.entries(cars).map(([id, carState]) => (
+        <MultiplayerCar key={id} carState={carState} carRef={multiplayerCarRef} />
+      ))}
       {collectibles.map((pos, index) => (
         <Collectible key={index} position={pos} setScore={setScore} carRef={carRef} addOrb={addOrb} />
       ))}
       {ringPositions.map((pos, index) => (
         <RingObstacle key={index} position={pos} setScore={setScore} carRef={carRef} />
       ))}
-      <Ball position={ballInitialPosition} carRef={carRef} />
+      
       <Environment background files="/sky.hdr" />
     </Canvas>
-  );
-};
-
+  )
+}
 export default ThreeDModel;
