@@ -15,20 +15,29 @@ interface CarProps {
   terrainRef: React.MutableRefObject<THREE.Mesh | null>;
 }
 
-const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, carRef, terrainRef }) => {
+const ControllerCar: React.FC<CarProps> = ({
+  position,
+  rotation,
+  setRotation,
+  carRef,
+  terrainRef,
+}) => {
   const normalSpeed = 2;
   const boostSpeed = 4;
+  const airSpeed = 3;
   const rotationSpeed = 0.05;
   const airRotationSpeed = 0.05;
   const gravity = 1;
   const jumpForce = 60;
-  const flipForce = 20; // Reduced force applied during flip for more control
+  const flipForce = 20;
   const boostDecay = 0.02;
+  
   const [boosting, setBoosting] = useState(false);
   const [jumping, setJumping] = useState(false);
   const [inAir, setInAir] = useState(false);
   const [canDoubleJump, setCanDoubleJump] = useState(false);
-  const [flipping, setFlipping] = useState(false); // State to handle flip
+  const [flipping, setFlipping] = useState(false);
+  
   const raycaster = useRef(new THREE.Raycaster());
   const { car, setFramesPerSecond } = useGameContext();
 
@@ -58,92 +67,99 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
         const jumpButtonPressed = buttons[0].pressed; // X button
         const leftBumperPressed = buttons[4].pressed; // Left bumper (L1)
 
-        const speed = boosting ? boostSpeed : normalSpeed;
+        const speed = boosting ? boostSpeed : (inAir ? airSpeed : normalSpeed);
 
-        if (!inAir) {
+        if (carRef.current) {
+          // Get the car's local forward and right direction
+          const forwardVector = new THREE.Vector3();
+          const rightVector = new THREE.Vector3();
+          carRef.current.getWorldDirection(forwardVector);
+          rightVector.crossVectors(new THREE.Vector3(0, 1, 0), forwardVector);
+
           // Ground controls
-          if (accelerateButtonPressed > 0.1) {
-            api.start({
-              x: x.get() + accelerateButtonPressed * speed * Math.sin(rotation[1]),
-              z: z.get() + accelerateButtonPressed * speed * Math.cos(rotation[1]),
-            });
-          }
-          if (brakeButtonPressed > 0.1) {
-            api.start({
-              x: x.get() - brakeButtonPressed * speed * Math.sin(rotation[1]),
-              z: z.get() - brakeButtonPressed * speed * Math.cos(rotation[1]),
-            });
-          }
-          if (Math.abs(leftStickX) > 0.1) {
-            setRotation(([x, y, z]) => [x, y - leftStickX * rotationSpeed, z]);
-          }
-        } else {
-          // Air controls
-          const quaternion = new THREE.Quaternion();
-          const euler = new THREE.Euler(rotation[0], rotation[1], rotation[2], 'YXZ');
+          if (!inAir) {
+            if (accelerateButtonPressed > 0.1) {
+              api.start({
+                x: x.get() + accelerateButtonPressed * speed * forwardVector.x,
+                z: z.get() + accelerateButtonPressed * speed * forwardVector.z,
+              });
+            }
+            if (brakeButtonPressed > 0.1) {
+              api.start({
+                x: x.get() - brakeButtonPressed * speed * forwardVector.x,
+                z: z.get() - brakeButtonPressed * speed * forwardVector.z,
+              });
+            }
+            if (Math.abs(leftStickX) > 0.1) {
+              setRotation(([x, y, z]) => [x, y - leftStickX * rotationSpeed, z]);
+            }
+          } else {
+            // Air controls
+            const quaternion = new THREE.Quaternion();
+            const euler = new THREE.Euler(rotation[0], rotation[1], rotation[2], 'YXZ');
 
-          if (Math.abs(leftStickX) > 0.1 && !leftBumperPressed) {
-            euler.y -= leftStickX * airRotationSpeed;
-          }
-          if (Math.abs(leftStickY) > 0.1 && !leftBumperPressed) {
-            euler.x += leftStickY * airRotationSpeed;
-          }
-          if (leftBumperPressed) {
-            if (Math.abs(leftStickX) > 0.1 || Math.abs(leftStickY) > 0.1) {
-              euler.z += leftStickX * airRotationSpeed;
+            if (Math.abs(leftStickX) > 0.1 && !leftBumperPressed) {
+              euler.y -= leftStickX * airRotationSpeed;
+            }
+            if (Math.abs(leftStickY) > 0.1 && !leftBumperPressed) {
               euler.x += leftStickY * airRotationSpeed;
             }
-          }
-
-          quaternion.setFromEuler(euler);
-          setRotation([euler.x, euler.y, euler.z]);
-        }
-
-        // Handle boosting
-        if (boostButtonPressed) {
-          setBoosting(true);
-        } else {
-          setBoosting(false);
-        }
-
-        // Handle jumping and flipping
-        if (jumpButtonPressed && !jumping) {
-          if (!inAir) {
-            setJumping(true);
-            setInAir(true);
-            setCanDoubleJump(true);
-            api.start({ y: y.get() + jumpForce });
-          } else if (canDoubleJump && !flipping) {
-            setCanDoubleJump(false);
-            setFlipping(true);
-            if (Math.abs(leftStickX) > 0.1 || Math.abs(leftStickY) > 0.1) {
-              // Apply flip rotation based on left stick direction
-              const flipDirection = new THREE.Vector3(leftStickX, 0, leftStickY).normalize().multiplyScalar(flipForce);
-              flipVelocity.current.copy(flipDirection); // Apply flip direction to velocity
-              setRotation(([x, y, z]) => [x + leftStickY * Math.PI / 10, y + leftStickX * Math.PI / 2, z]); // Slow down the rotation
-            } else {
-              // Regular jump without flip
-              api.start({ y: y.get() + jumpForce });
+            if (leftBumperPressed) {
+              if (Math.abs(leftStickX) > 0.1 || Math.abs(leftStickY) > 0.1) {
+                euler.z += leftStickX * airRotationSpeed;
+                euler.x += leftStickY * airRotationSpeed;
+              }
             }
-            setTimeout(() => {
-              setFlipping(false);
-              // setRotation([0, rotation[1], 0]); // Reset to flat rotation
-            }, 500); // Extend the flipping duration
-          }
-        }
 
-        if (!jumpButtonPressed && jumping) {
-          setJumping(false);
+            quaternion.setFromEuler(euler);
+            setRotation([euler.x, euler.y, euler.z]);
+          }
+
+          // Handle boosting in the air
+          if (boostButtonPressed && inAir) {
+            setBoosting(true);
+          } else {
+            setBoosting(false);
+          }
+
+          // Handle jumping and flipping
+          if (jumpButtonPressed && !jumping) {
+            if (!inAir) {
+              setJumping(true);
+              setInAir(true);
+              setCanDoubleJump(true);
+              api.start({ y: y.get() + jumpForce });
+            } else if (canDoubleJump && !flipping) {
+              setCanDoubleJump(false);
+              setFlipping(true);
+              if (Math.abs(leftStickX) > 0.1 || Math.abs(leftStickY) > 0.1) {
+                const flipDirection = new THREE.Vector3(leftStickX, 0, leftStickY)
+                  .normalize()
+                  .multiplyScalar(flipForce);
+                flipVelocity.current.copy(flipDirection);
+                setRotation(([x, y, z]) => [
+                  x + leftStickY * Math.PI / 10,
+                  y + leftStickX * Math.PI / 2,
+                  z,
+                ]);
+              }
+              setTimeout(() => {
+                setFlipping(false);
+              }, 500); // Extend flip duration
+            }
+          }
+
+          if (!jumpButtonPressed && jumping) {
+            setJumping(false);
+          }
         }
       }
 
       animationFrameId = requestAnimationFrame(handleGamepadInput);
     };
 
-    // Start the gamepad input handling
     animationFrameId = requestAnimationFrame(handleGamepadInput);
 
-    // Cleanup function to cancel animation frame
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
@@ -184,8 +200,7 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
         y: y.get() + flipVelocity.current.y,
         z: z.get() + flipVelocity.current.z,
       });
-      // Apply damping to gradually reduce flip velocity
-      flipVelocity.current.multiplyScalar(0.9);
+      flipVelocity.current.multiplyScalar(0.9); // Apply damping to reduce flip velocity
     }
 
     if (boosting) {
@@ -212,19 +227,25 @@ const ControllerCar: React.FC<CarProps> = ({ position, rotation, setRotation, ca
 
   let frameCount = 0;
   let lastTime = performance.now();
-  
+
   useFrame(() => {
     const currentTime = performance.now();
     frameCount++;
     if (currentTime > lastTime + 1000) {
-      setFramesPerSecond(Math.round((frameCount * 1000) / (currentTime - lastTime)));
+      setFramesPerSecond(
+        Math.round((frameCount * 1000) / (currentTime - lastTime))
+      );
       frameCount = 0;
       lastTime = currentTime;
     }
   });
 
   return (
-    <animated.group ref={carRef} position={[x.get(), y.get(), z.get()]} rotation={rotation as [number, number, number]}>
+    <animated.group
+      ref={carRef}
+      position={[x.get(), y.get(), z.get()]}
+      rotation={rotation as [number, number, number]}
+    >
       <CarModel modelPath={car} />
       {boosting && <BoostParticles />}
     </animated.group>

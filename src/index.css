@@ -70,3 +70,78 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 20px #ffcc00, 0 0 30px #ff66ff;
+  }
+  50% {
+    box-shadow: 0 0 40px #ffcc00, 0 0 60px #ff66ff;
+  }
+  100% {
+    box-shadow: 0 0 20px #ffcc00, 0 0 30px #ff66ff;
+  }
+}
+
+
+/* Container to center the loading screen */
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000; /* Dark background */
+  z-index: 1000;
+}
+
+/* Content Wrapper */
+.loading-content {
+  text-align: center;
+  color: white;
+}
+
+/* Spinner */
+.loading-spinner {
+  margin-bottom: 20px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* The spinning circle */
+.loading-circle {
+  border: 8px solid rgba(255, 255, 255, 0.2); /* Light border */
+  border-top: 8px solid #ffffff; /* Solid top border for the spinner */
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  animation: spin 1.5s linear infinite;
+}
+
+/* Text below the spinner */
+.loading-text h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.loading-text p {
+  font-size: 16px;
+}
+
+/* Keyframes for the spinner animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
