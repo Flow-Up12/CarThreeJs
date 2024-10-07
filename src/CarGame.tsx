@@ -6,7 +6,7 @@ import  {
 } from "./context/GameContextProvider";
 import ThreeDModel from "./components/TreeDModel";
 import StartScreen from "./screens/StartScreen";
-import LoadingScreen from "./components/LoadingScreen";
+import LoadingScreen from "./screens/LoadingScreen";
 
 const CarGame: React.FC = () => {
   const { isLoading, progress} = useGameContext();

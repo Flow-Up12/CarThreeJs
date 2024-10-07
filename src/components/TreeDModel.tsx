@@ -7,7 +7,7 @@ import ControllerCar from './ControllerCar';
 import KeyboardCar from './KeyboardCar';
 import Collectible from './Collectible';
 import RingObstacle from './RingObstacle';
-import LoadingScreen from './LoadingScreen';
+import LoadingScreen from '../screens/LoadingScreen';
 import { useGameContext } from '../context/GameContextProvider';
 import * as THREE from 'three';
 import { generateRandomPositions } from '../utils/generateRandomPositions';

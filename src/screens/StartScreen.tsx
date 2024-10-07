@@ -15,13 +15,13 @@ const DraggableCar: React.FC<{ modelPath: string; setProgress: (value: number) =
       // Smooth transition towards the target position using linear interpolation
       carRef.current.position.x = THREE.MathUtils.lerp(carRef.current.position.x, targetPositionX.current, 0.1);
 
-      // Limit the car's movement to the right within a range of 0 to 5 on the x-axis
+      // Limit the car's movement to the right within a range of 0 to 5.5 on the x-axis
       const maxPositionX = 5.5;
       const currentPositionX = carRef.current.position.x;
 
-      // Update the progress based on the car's position
+      // Update the progress based on the car's position, ensure it reaches 100 smoothly
       const currentProgress = Math.min((currentPositionX / maxPositionX) * 100, 100);
-      setProgress(currentProgress);
+      setProgress(Math.min(currentProgress, 99.9)); // Limit to just below 100 for smoother transitions
     }
   });
 
@@ -46,11 +46,17 @@ const StartScreen = () => {
   const { setIsLoading } = useGameContext();
 
   useEffect(() => {
-    if (progress >= 99) {
-      setIsLoading(false);
+    // Ensure smooth transition even after progress reaches 100%
+    if (progress >= 99.9 ) {
+      // Add a small delay before hiding the loading screen for a smoother effect
+      const timeout = setTimeout(() => {
+        setIsLoading(false); // Stop the loading screen after the progress reaches 100%
+      }, 500); // Adjust the delay as needed
+      return () => clearTimeout(timeout);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress]);
+
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
