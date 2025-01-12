@@ -25,7 +25,7 @@ const CarModel: React.FC<CarModelProps> = ({ modelPath }) => {
   // Apply rotation to ensure all cars point in the same direction
   useMemo(() => {
     if (scene) {
-      scene.rotation.set(0, Math.PI, 0); // Rotate to face correct direction
+      scene.rotation.set(0, 0, 0); // Rotate to face correct direction
     }
   }, [scene]);
 

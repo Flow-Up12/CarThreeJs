@@ -19,7 +19,7 @@ const ExplodingOrb: React.FC<{ position: [number, number, number] }> = ({ positi
           attach="attributes-position"
           count={100}
           array={new Float32Array(Array.from({ length: 300 }, () => (Math.random() - 0.5) * 2))}
-          itemSize={3}
+          itemSize={5}
         />
       </bufferGeometry>
       <pointsMaterial attach="material" color="orange" size={0.1} transparent />

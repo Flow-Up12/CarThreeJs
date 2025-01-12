@@ -1,5 +1,5 @@
 import { useProgress } from '@react-three/drei';
-import React, { createContext, useState, ReactNode, useContext } from 'react';
+import React, { createContext, useState, ReactNode, useContext, useEffect } from 'react';
 
 interface GameContextProviderType {
   car: string;
@@ -13,6 +13,8 @@ interface GameContextProviderType {
   framesPerSecond: number;
   setFramesPerSecond: React.Dispatch<React.SetStateAction<number>>;
   progress: number;
+  boostMeter: number;
+  setBoostMeter: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const GameContext = createContext<GameContextProviderType>({
@@ -27,6 +29,8 @@ export const GameContext = createContext<GameContextProviderType>({
   framesPerSecond: 0,
   setFramesPerSecond: () => {},
   progress: 0,
+  boostMeter: 100,
+  setBoostMeter: () => {},
 });
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -38,10 +42,13 @@ const GameContextProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [inputType, setInputType] = useState<"keyboard" | "controller">("controller");
   const [framesPerSecond, setFramesPerSecond] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
+  const [boostMeter, setBoostMeter] = useState<number>(100); // Add boostMeter
 
   const { progress } = useProgress(); // Track loading progress
 
+  useEffect(() => {
+      setBoostMeter(100);
+  }, [score])
 
   return (
     <GameContext.Provider value={{ 
@@ -55,7 +62,9 @@ const GameContextProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setInputType,
       framesPerSecond,
       setFramesPerSecond,
-      progress
+      progress,
+      boostMeter,
+      setBoostMeter,
     }}>
       {children}
     </GameContext.Provider>

@@ -6,7 +6,7 @@ interface FollowCameraProps {
   carRef: React.MutableRefObject<THREE.Group | null>;
 }
 
-const FollowCamera: React.FC<FollowCameraProps> = ({ carRef }) => {
+const FollowCameraController: React.FC<FollowCameraProps> = ({ carRef }) => {
   const { camera } = useThree();
   const cameraRef = useRef<THREE.Group>(null);
   const [cameraOffset] = useState(new THREE.Vector3(0, 5, 10));
@@ -64,4 +64,4 @@ const FollowCamera: React.FC<FollowCameraProps> = ({ carRef }) => {
   return <group ref={cameraRef} />;
 };
 
-export default FollowCamera;
+export default FollowCameraController;

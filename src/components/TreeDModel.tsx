@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
-import FollowCamera from './FollowCamera';
 import Terrain from './Terrain';
 import ControllerCar from './ControllerCar';
 import KeyboardCar from './KeyboardCar';
@@ -12,14 +11,13 @@ import { useGameContext } from '../context/GameContextProvider';
 import * as THREE from 'three';
 import { generateRandomPositions } from '../utils/generateRandomPositions';
 import { Ball } from './Ball';
+import FollowCameraController from './FollowCameraController';
 
 const ThreeDModel: React.FC = () => {
   const { setScore, inputType, progress } = useGameContext();
   
   const [collectibles, setCollectibles] = useState<[number, number, number][]>([]);
   const [ringPositions, setRingPositions] = useState<[number, number, number][]>([]);
-  const [position, setPosition] = useState<[number, number, number]>([0, 0.5, 0]);
-  const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
 
   const carRef = useRef<THREE.Group>(null);
   const terrainRef = useRef<THREE.Mesh>(null);
@@ -54,11 +52,7 @@ const ThreeDModel: React.FC = () => {
       <pointLight position={[10, 10, 10]} intensity={0.5} />
       
       {inputType === 'controller' && (
-        <ControllerCar
-          position={position}
-          rotation={rotation}
-          setPosition={setPosition}
-          setRotation={setRotation}
+        <ControllerCar 
           carRef={carRef}
           terrainRef={terrainRef}
         />
@@ -66,16 +60,13 @@ const ThreeDModel: React.FC = () => {
       
       {inputType === 'keyboard' && (
         <KeyboardCar
-          position={position}
-          rotation={rotation}
-          setPosition={setPosition}
-          setRotation={setRotation}
           carRef={carRef}
           terrainRef={terrainRef}
         />
       )}
 
-      <FollowCamera carRef={carRef} />
+      <FollowCameraController carRef={carRef} />
+
       
       <mesh ref={terrainRef}>
         <Terrain />

@@ -7,6 +7,7 @@ import  {
 import ThreeDModel from "./components/TreeDModel";
 import StartScreen from "./screens/StartScreen";
 import LoadingScreen from "./screens/LoadingScreen";
+import BoostBar from "./components/BoostBar";
 
 const CarGame: React.FC = () => {
   const { isLoading, progress} = useGameContext();
@@ -20,6 +21,7 @@ const CarGame: React.FC = () => {
       {!isLoading && (
         <div className="App">
           <Header />
+          <BoostBar />
           <main className="App-main">
             <ThreeDModel />
           </main>
